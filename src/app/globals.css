@@ -19,8 +19,164 @@
   }
 }
 
+
+
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* 애니메이션 */
+
+@keyframes bg-shrink {
+  0% {
+    height: 100%;
+  }
+
+  100% {
+    height: 50%;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes text-slide-up {
+  0% {
+    height: 0%;
+  }
+
+  100% {
+    height: 50%;
+    padding: 16px;
+  }
+}
+
+@keyframes text-content {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes bubble-left {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bubble-right {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dot-bounce {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-1px);
+  }
+
+  80%, 100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes countdown {
+  0% {
+    background-color: #000000;
+  }
+  100% {
+    background-color: #800000;
+  }
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(2);
+    opacity: 0;
+  }
+  }
+
+
+.animate-bg-shrink {
+  animation: bg-shrink 0.7s ease-out forwards;
+}
+
+.animate-text-slide-up {
+  animation: text-slide-up 0.7s ease-out forwards;
+}
+
+.animate-text-content {
+  animation: text-content 0.3s ease-out 0.7s forwards;
+}
+
+.animate-bubble-left {
+  animation: bubble-left 0.7s ease-out 1.4s forwards;
+}
+
+.animate-bubble-right {
+  animation: bubble-right 0.7s ease-out 2.1s forwards;
+}
+
+.animate-start-button {
+  animation: fade-in 0.3s ease-out 2.8s forwards;
+}
+
+.dot {
+  animation: dot-bounce 0.8s ease-in-out infinite;
+}
+
+.dot:nth-child(1) {
+  animation-delay: 0s;
+}
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.counter-overlay {
+  animation: countdown 5s ease-in-out forwards;
+}
+
+.speaker .wave:nth-child(1) {
+  animation: ripple 2s linear infinite;
+}
+
+.speaker .wave:nth-child(2) {
+  animation: ripple 2s 1s linear infinite;
+}
+
+
+

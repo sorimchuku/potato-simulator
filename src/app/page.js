@@ -1,103 +1,149 @@
+'use client';
+
 import Image from "next/image";
+import localFont from "next/font/local";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useGlobalContext } from "./context/globalContext";
+import { situation_data } from "./data/situationData";
+
+const ptab = localFont({
+  src: "./fonts/ptab.ttf",
+  variable: "--font-ptab",
+  weight: "400",
+});
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { situationData, setSituationData } = useGlobalContext();
+  const [startPageOpen, setStartPageOpen] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [finalIndex, setFinalIndex] = useState(-1);
+  const [isAnimating, setIsAnimating] = useState(true);
+  const [animationSpeed, setAnimationSpeed] = useState(100);
+  const [responseType, setResponseType] = useState("voice");
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleResponseButtonClick = (responseType) => {
+    setIsAnimating(true);
+    setResponseType(responseType);
+
+    let speed = animationSpeed;
+
+    const slowDownAnimation = () => {
+      if (speed > 500) {
+        const randomIndex = Math.floor(Math.random() * situation_data.length);
+        setFinalIndex(randomIndex); // 최종 선택된 인덱스 설정
+        setCurrentIndex(randomIndex); // 현재 인덱스 업데이트
+        return;
+      }
+
+      speed += 50;
+      setAnimationSpeed(speed);
+
+      setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * situation_data.length);
+        setCurrentIndex(randomIndex); // 현재 인덱스 업데이트
+        slowDownAnimation();
+      }, speed);
+    };
+
+    slowDownAnimation();
+  };
+
+  useEffect(() => {
+    if (finalIndex !== -1) {
+      setCurrentIndex(finalIndex);
+      setSituationData(situation_data[finalIndex]); // 최종 선택된 데이터를 전역 상태에 저장
+      setIsAnimating(false);
+      setAnimationSpeed(100);
+
+      // 1초 후 페이지 이동
+      setTimeout(() => {
+        router.push(`/situation?responseType=${responseType}`);
+      }, 1000);
+    }
+  }, [finalIndex, responseType]);
+
+  useEffect(() => {
+    let interval;
+
+    if (isAnimating) {
+      interval = setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * situation_data.length);
+        setCurrentIndex(randomIndex);
+      }, animationSpeed);
+    }
+
+    return () => {
+      clearInterval(interval);
+    }
+  }, [isAnimating, animationSpeed]);
+
+
+
+  const introPage = (
+    <>
+      <h1 className={`title text-center text-5xl flex flex-col items-center justify-center my-auto gap-2 ${ptab.className}`}>
+        <div className="title-text">감자</div>
+        <div className="title-text">시뮬레이터</div>
+      </h1>
+      <div className="button-group flex flex-col items-center justify-center mt-8">
+        <div onClick={() => setStartPageOpen(true)} className="start-button flex items-center justify-center w-64 py-3 bg-black text-white rounded-lg transition duration-300 capitalize font-bold text-xl cursor-pointer">
+          START
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="list-button flex items-center justify-center w-64 py-3 mt-4 bg-white text-black rounded-lg transition duration-300 text-xl cursor-pointer">
+          나의 기록
+        </div>
+      </div>
+    </>
+  );
+
+  const startPage = (
+    <>
+      <div className="cancel-button flex justify-center items-center self-start w-10 h-10" onClick={() => setStartPageOpen(false)}>
+        <Image src={"/icon/cancel_dark.svg"} alt="cancel" width={48} height={48} />
+      </div>
+      <div className="h-24">
+        <div>{finalIndex !== -1 ? situation_data[finalIndex].title : situation_data[currentIndex].title}</div>
+      </div>
+      <div className="description text-center text-xl mt-4">
+        <div className="description-text">이제부터 자기소개가 필요한</div>
+        <div className="description-text"><span className="font-bold">랜덤의 상황이 제시</span>됩니다.</div>
+        <div className="description-text mt-4">당신의 센스를 발휘해 보세요!</div>
+      </div>
+      <div className="button-group flex flex-col items-center justify-center mt-8">
+        <div onClick={() => handleResponseButtonClick("voice")} className="speak-button flex items-center justify-center w-64 py-3 bg-black text-white rounded-lg transition duration-300 capitalize font-bold text-xl cursor-pointer">
+          <div className="icon flex items-center justify-center w-4 h-4 mr-2">
+            <Image src={"/icon/mic.svg"} alt="mic" width={32} height={32} />
+          </div>
+          <div className="text">말로 답변</div>
+        </div>
+        <div onClick={() => handleResponseButtonClick("text")} className="text-button flex items-center justify-center w-64 py-3 mt-4 bg-white text-black rounded-lg transition duration-300 text-xl cursor-pointer">
+          <div className="icon flex items-center justify-center w-6 h-6 mr-2">
+            <Image src={"/icon/bubble.svg"} alt="keyboard" width={32} height={32} />
+          </div>
+          <div className="text">텍스트로 답변</div>
+        </div>
+      </div>
+    </>
+  );
+
+
+
+
+
+
+  return (
+    <div className="main flex flex-col items-center justify-between min-h-screen p-4 pb-16 h-full">
+      {startPageOpen ? (
+        <>
+          {startPage}
+        </>
+      ) : (
+        <>
+          {introPage}
+        </>
+      )}
     </div>
   );
 }
