@@ -6,10 +6,11 @@ const GlobalContext = createContext();
 
 export function GlobalContextProvider({ children }) {
   const [transcription, setTranscription] = useState("");
+  const [duration, setDuration] = useState(0);
   const [situationData, setSituationData] = useState(null);
 
   return (
-    <GlobalContext.Provider value={{ transcription, setTranscription, situationData, setSituationData }}>
+    <GlobalContext.Provider value={{ transcription, setTranscription, duration, setDuration, situationData, setSituationData }}>
       {children}
     </GlobalContext.Provider>
   );

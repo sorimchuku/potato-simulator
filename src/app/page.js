@@ -15,7 +15,7 @@ const ptab = localFont({
 
 export default function Home() {
   const { situationData, setSituationData } = useGlobalContext();
-  const [startPageOpen, setStartPageOpen] = useState(true);
+  const [startPageOpen, setStartPageOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [finalIndex, setFinalIndex] = useState(-1);
   const [isAnimating, setIsAnimating] = useState(true);
@@ -91,7 +91,8 @@ export default function Home() {
         <div onClick={() => setStartPageOpen(true)} className="start-button flex items-center justify-center w-64 py-3 bg-black text-white rounded-lg transition duration-300 capitalize font-bold text-xl cursor-pointer">
           START
         </div>
-        <div className="list-button flex items-center justify-center w-64 py-3 mt-4 bg-white text-black rounded-lg transition duration-300 text-xl cursor-pointer">
+        <div onClick={() => router.push("/record")}
+          className="list-button flex items-center justify-center w-64 py-3 mt-4 bg-white text-black rounded-lg transition duration-300 text-xl cursor-pointer">
           나의 기록
         </div>
       </div>

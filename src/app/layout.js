@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { GlobalContextProvider } from "./context/globalContext";
+import ClientInitializer from "./components/ClientInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,13 +26,17 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+
   return (
     <html lang="ko" className={pretendard.className}>
       <body
         className={`${pretendard.className} ${pretendard.className} antialiased`}
       >
-        <GlobalContextProvider>{children}</GlobalContextProvider>
-        
+        <GlobalContextProvider>
+          <ClientInitializer />
+          {children}
+        </GlobalContextProvider>
+
       </body>
     </html>
   );

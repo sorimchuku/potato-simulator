@@ -6,8 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { useGlobalContext } from "../context/globalContext";
 import { situation_data } from "../data/situationData";
 
+export function getImageUrl(situation) {
+    return `/image/situation/potato_situation_${situation?.id}.png`;
+}
+
 export default function SituationPage() {
-  const { setTranscription, situationData, setSituationData } = useGlobalContext();
+  const { setTranscription, setDuration, situationData, setSituationData } = useGlobalContext();
   const [responseType, setResponseType] = useState("voice"); // "voice" or "text"
   const [isLoading, setIsLoading] = useState(true);
   const [counter, setCounter] = useState(5);
@@ -18,13 +22,19 @@ export default function SituationPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [responseText, setResponseText] = useState("");
   const [textCountRemaining, setTextCountRemaining] = useState(0);
+  const [recognizing, setRecognizing] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const audioContextRef = useRef(null);
   const barsRef = useRef([]);
+  const startTimeRef = useRef(null);
   const router = useRouter();
 
   const startRecording = () => {
+    console.log("Starting recording...");
+    startTimeRef.current = Date.now();
+    console.log("Start time:", startTimeRef.current);
+
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
       const mimeType = "audio/webm;codecs=opus"; // "audio/webm" or "audio/wav" or "audio/mp4"
       if (!MediaRecorder.isTypeSupported(mimeType)) {
@@ -64,6 +74,7 @@ export default function SituationPage() {
           audioChunksRef.current.push(event.data);
         } else {
           console.error("No data available from MediaRecorder.");
+          audioChunksRef.current = []; // Clear chunks if no data
         }
       };
 
@@ -105,7 +116,6 @@ export default function SituationPage() {
         bar.style.height = "10px"; // Reset height
       }
     });
-
   };
 
   const textSubmit = () => {
@@ -115,7 +125,7 @@ export default function SituationPage() {
       const text = responseText.trim();
       setTranscription(text);
 
-      router.push("/result");
+      router.push("/result?responseType=text");
       setResponseText("");
 
     }, 2000);
@@ -142,6 +152,7 @@ export default function SituationPage() {
 
   useEffect(() => {
     if (audioBlob) {
+      setRecognizing(true);
       console.log("Audio Blob:", audioBlob);
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
@@ -174,7 +185,8 @@ export default function SituationPage() {
         .then((data) => {
           console.log("Transcription:", data.text);
           setTranscription(data.text);
-          router.push("/result");
+          setRecognizing(false);
+          router.push("/result?responseType=voice");
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -240,18 +252,12 @@ export default function SituationPage() {
             return prev - 1;
           } else {
             clearInterval(timer);
-              stopRecording();
+            handleAnswerComplete();
             return 0;
           }
         });
       }
     }, 1000);
-
-    return () => {
-      clearInterval(timer);
-      stopRecording();
-      setTimeRemaining(0);
-    }
 
   }, [situationData?.time, isStarted, responseType]);
 
@@ -260,6 +266,30 @@ export default function SituationPage() {
       setTextCountRemaining(situationData?.textCount);
     }
   }, [isStarted, situationData?.textCount]);
+
+
+  // 답변 완료 시 소요 시간 계산
+  const handleAnswerComplete = () => {
+    console.log("Answer completed");
+    let duration = situationData?.time; // 기본값: 최대 시간
+    if (startTimeRef.current) {
+      duration = Math.round((Date.now() - startTimeRef.current) / 1000);
+      // 최대 시간 초과 방지
+      if (situationData?.time && duration > situationData.time) {
+        duration = situationData.time;
+      }
+    }
+    setDuration(duration);
+    stopRecording();
+    console.log("Answer duration:", duration);
+  };
+
+  const loadingAnimation = (
+    <div className="loading-container flex flex-col items-center justify-center h-screen w-screen fixed top-0 left-0 bg-white z-50 opacity-50">
+      <div className="loading-spinner animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-gray-900"></div>
+      <span className="text-gray-500 text-lg ml-4">텍스트 변환중...</span>
+    </div>
+  );
 
 
   const situationIntro = (
@@ -335,7 +365,7 @@ export default function SituationPage() {
 
       <div className="submit-button flex justify-center items-center bg-black text-white rounded-lg capitalize font-bold text-xl py-3 w-full"
         onClick={() => {
-          stopRecording();
+          handleAnswerComplete();
         }}
       >
         <span>답변 완료!</span>
@@ -382,6 +412,7 @@ export default function SituationPage() {
 
   return (
     <div className="situation-page flex flex-col h-screen">
+      { recognizing && loadingAnimation }
 
       <div className="cancel-button flex justify-center items-center self-start w-10 h-10 absolute top-4 left-4 z-20 mix-blend-difference"
         onClick={() => router.push("/")}>
@@ -408,7 +439,7 @@ export default function SituationPage() {
 
       <div className="bg-image w-full h-full bg-cover bg-center animate-bg-shrink -z-10">
         <Image
-          src={situationData?.imageUrl}
+          src={getImageUrl(situationData)}
           alt="situation"
           width={500}
           height={500}
